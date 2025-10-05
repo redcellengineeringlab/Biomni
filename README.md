@@ -1,37 +1,60 @@
-<p align="center">
-  <img src="./figs/biomni_logo.png" alt="Biomni Logo" width="600px" />
-</p>
-
-<p align="center">
-<a href="https://join.slack.com/t/biomnigroup/shared_invite/zt-3avks4913-dotMBt8D_apQnJ3mG~ak6Q">
-<img src="https://img.shields.io/badge/Join-Slack-4A154B?style=for-the-badge&logo=slack" alt="Join Slack" />
-</a>
-<a href="https://biomni.stanford.edu">
-<img src="https://img.shields.io/badge/Try-Web%20UI-blue?style=for-the-badge" alt="Web UI" />
-</a>
-<a href="https://x.com/ProjectBiomni">
-<img src="https://img.shields.io/badge/Follow-on%20X-black?style=for-the-badge&logo=x" alt="Follow on X" />
-</a>
-<a href="https://www.linkedin.com/company/project-biomni">
-<img src="https://img.shields.io/badge/Follow-LinkedIn-0077B5?style=for-the-badge&logo=linkedin" alt="Follow on LinkedIn" />
-</a>
-<a href="https://www.biorxiv.org/content/10.1101/2025.05.30.656746v1">
-<img src="https://img.shields.io/badge/Read-Paper-green?style=for-the-badge" alt="Paper" />
-</a>
-</p>
-
-
-
 # Biomni: A General-Purpose Biomedical AI Agent
 
 ## Overview
 
+This is the biomni repository for the NUS Red Cell Engineering Lab.
 
-Biomni is a general-purpose biomedical AI agent designed to autonomously execute a wide range of research tasks across diverse biomedical subfields. By integrating cutting-edge large language model (LLM) reasoning with retrieval-augmented planning and code-based execution, Biomni helps scientists dramatically enhance research productivity and generate testable hypotheses.
+## Project Structure
 
+- `app/`: Core application to run Biomni as a dockerized agent receiving messages via WebSocket.
+- The rest of the codebase is inherited from the original [Biomni repository](https://github.com/snap-stanford/Biomni). 
+- This repo is dockerized into 2 seperate images:
+    - `biomni_env`: The base conda environment with all dependencies installed. The Dockerfile is in `biomni_env/Dockerfile`.
+    - `biomni_app`: The app code that runs the websocket server and the agent. The Dockerfile is in `app/Dockerfile`.
 
-## Quick Start
+## Project Pipeline
 
+- Each time a user wants to start a new session, the frontend sends a request to a PBS job scheduler in HPC cluster to start a new docker container with the `biomni_app` image.
+- The container starts a websocket server and waits for messages from the frontend.
+- The frontend sends user messages to the websocket server, which then invokes the Biomni agent to process the message and return the response to the frontend.
+- All files generated during the session are stored a shared volume mounted to the container. When the session ends, the container is destroyed but the files are kept in the shared volume.
+
+## Running the biomni_app image
+
+- First, make sure you have created a seperate conda environment in the HPC cluster, you can do so by running:
+
+```bash
+conda env create -f biomni_env/environment.yml
+conda activate biomni_e1
+pip install biomni --upgradepip install 
+```
+
+- This so that you can run the `create_data_lake.py` script to download the data lake (11GB) to the shared volume. You only need to do this once.
+
+```bash
+python create_data_lake.py
+```
+
+- Next, pull the `biomni_app` and `biomni_env` images from Dockerhub:
+
+```bash
+docker pull uylulu/biomni_app:latest
+docker pull uylulu/biomni_env:latest
+```
+
+- Then, create a new directory to store the files generated during the session, this directory will be mounted to the container as a shared volume:
+
+```bash
+mkdir /path/to/generated_files
+```
+
+- Finally, you can run the `biomni_app` image with the following command:
+
+```bash
+docker run -d -p 8000:8000 -v /path/to/data_lake:/app/data -v /path/to/generated_files:/app/generated_files uylulu/biomni_app:latest
+```
+
+### [IMPORTANT] The other half of this README file is from the original Biomni repository:
 ### Installation
 
 Our software environment is massive and we provide a single setup.sh script to setup.
@@ -300,3 +323,4 @@ Experience Biomni through our no-code web interface at **[biomni.stanford.edu](h
   publisher={Cold Spring Harbor Laboratory}
 }
 ```
+
