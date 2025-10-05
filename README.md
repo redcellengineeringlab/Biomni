@@ -54,6 +54,12 @@ mkdir /path/to/generated_files
 docker run -d -p 8000:8000 -v /path/to/data_lake:/app/data -v /path/to/generated_files:/app/generated_files uylulu/biomni_app:latest
 ```
 
+- You can check if the container is running by using:
+
+```bash
+curl http://localhost:8000/health
+```
+
 ### [IMPORTANT] The other half of this README file is from the original Biomni repository:
 ### Installation
 
