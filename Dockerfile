@@ -1,13 +1,12 @@
-FROM uylulu/biomni_env
+FROM uylulu/biomni_env:latest
 
 WORKDIR /app
 
 COPY /app/requirements.txt .
 
-RUN conda install --yes --file requirements.txt
+RUN pip install -r requirements.txt
 
 COPY app/ .
-COPY biomni/ /app/biomni/
 
 RUN chmod u+x docker-entrypoint.sh
 ENTRYPOINT ["./docker-entrypoint.sh"]
