@@ -7,6 +7,9 @@ dependencies:
   - python=3.11
   - pip
   - pip:
+      - flax
+      - torch
+      - tensorflow==2.20.0
       - numpy==2.1
       - pandas
       - matplotlib
