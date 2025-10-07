@@ -14,9 +14,9 @@ This is the biomni repository for the NUS Red Cell Engineering Lab.
 
 ## Project Pipeline
 
-- Each time a user wants to start a new session, the frontend sends a request to a PBS job scheduler in HPC cluster to start a new docker container with the `biomni_app` image.
-- The container starts a websocket server and waits for messages from the frontend.
-- The frontend sends user messages to the websocket server, which then invokes the Biomni agent to process the message and return the response to the frontend.
+- Each time a user wants to start a new session, the frontend sends a request to the backend, which sends a request to PBS job scheduler in HPC cluster to start a new docker container with the `biomni_app` image.
+- The container starts an agent instance, all communication between the container and backend is done via standard input/output.
+- The frontend sends user messages to the backend via websocket, the backend forwards the messages to the container via standard input.
 - All files generated during the session are stored a shared volume mounted to the container. When the session ends, the container is destroyed but the files are kept in the shared volume.
 
 ## Running the biomni_app image
@@ -51,7 +51,7 @@ mkdir /path/to/generated_files
 - Finally, you can run the `biomni_app` image with the following command:
 
 ```bash
-docker run -d -p 8000:8000 -v /path/to/data_lake:/app/data -v /path/to/generated_files:/app/generated_files uylulu/biomni_app:latest
+docker run -it -v /path/to/data_lake:/app/data -v /path/to/generated_files:/app/generated_files uylulu/biomni_app:latest
 ```
 
 - You can check if the container is running by using:
